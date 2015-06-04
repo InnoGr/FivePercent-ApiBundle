@@ -1,0 +1,27 @@
+{
+    "name": "fivepercent/api-bundle",
+    "description": "Api system",
+    "keywords": [ "api", "json-rpc server" ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vitaliy Zhuk",
+            "email": "zhuk2205@gmail.com"
+        }
+    ],
+
+    "require": {
+        "php": ">=5.4",
+        "fivepercent/cache": "~1.0",
+        "fivepercent/api": "~1.0"
+    },
+
+    "suggest": {
+        "fivepercent/integration-bundle": "For integrate common functions (EnabledChecker, Security, Transformer, etc...)"
+    },
+
+    "autoload": {
+        "psr-4": { "FivePercent\\Bundle\\ApiBundle\\": "src/" }
+    }
+}

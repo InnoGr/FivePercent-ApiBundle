@@ -1,0 +1,203 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="api.handler.class">FivePercent\Component\Api\Handler\BaseHandler</parameter>
+        <parameter key="api.handler_registry.class">FivePercent\Bundle\ApiBundle\Handler\ContainerHandlerRegistry</parameter>
+
+        <parameter key="api.parameter.object_mapper_resolver_and_extractor.class">FivePercent\Component\Api\Handler\Parameter\ObjectMapperParameterResolverAndExtractor</parameter>
+        <parameter key="api.parameter.method_parameter_resolver_and_extractor.class">FivePercent\Component\Api\Handler\Parameter\MethodParameterResolverAndExtractor</parameter>
+
+        <parameter key="api.callable_resolver.class">FivePercent\Component\Api\SMD\CallableResolver\ChainResolver</parameter>
+        <parameter key="api.callable_resolver.callable.class">FivePercent\Component\Api\SMD\CallableResolver\CallableResolver</parameter>
+        <parameter key="api.callable_resolver.service.class">FivePercent\Bundle\ApiBundle\SMD\CallableResolver\ServiceResolver</parameter>
+
+        <parameter key="api.action_loader.cached.class">FivePercent\Component\Api\SMD\Loader\CachedLoader</parameter>
+        <parameter key="api.action_loader.chain.class">FivePercent\Component\Api\SMD\Loader\ChainLoader</parameter>
+        <parameter key="api.action_loader.callable.class">FivePercent\Component\Api\SMD\Loader\CallableLoader</parameter>
+        <parameter key="api.action_loader.service_annotated.class">FivePercent\Bundle\ApiBundle\SMD\Loader\ServiceAnnotationLoader</parameter>
+        <parameter key="api.action_loader.service_method.class">FivePercent\Bundle\ApiBundle\SMD\Loader\ServiceMethodLoader</parameter>
+
+        <parameter key="api.action_manager.class">FivePercent\Component\Api\SMD\ActionManager</parameter>
+
+        <parameter key="api.error.class">FivePercent\Component\Error\Errors</parameter>
+
+        <parameter key="api.response_extractor.object_extractor.class">FivePercent\Component\Api\Handler\Response\ObjectResponseExtractor</parameter>
+        <parameter key="api.response_extractor.annotated_normalized_object_extractor.class">FivePercent\Component\Api\Handler\Response\AnnotatedNormalizedObjectResponseExtractor</parameter>
+
+        <parameter key="api.handler.action_extractor.class">FivePercent\Component\Api\Handler\Doc\ActionExtractor</parameter>
+        <parameter key="api.handler.extractor.class">FivePercent\Component\Api\Handler\Doc\Extractor</parameter>
+        <parameter key="api.handler.cached_extractor.class">FivePercent\Component\Api\Handler\Doc\CachedExtractor</parameter>
+        <parameter key="api.handler.extractor_registry.class">FivePercent\Bundle\ApiBundle\Handler\Doc\ContainerExtractorRegistry</parameter>
+
+        <parameter key="api.server.json_rpc.class">FivePercent\Component\Api\Server\JsonRpc\JsonRpcServer</parameter>
+        <parameter key="api.server_registry.class">FivePercent\Bundle\ApiBundle\Server\ContainerServerRegistry</parameter>
+
+        <parameter key="api.formatter.json_rpc.class">FivePercent\Component\Api\Doc\Formatter\JsonRpc\JsonRpcFormatter</parameter>
+        <parameter key="api.formatter_registry.class">FivePercent\Bundle\ApiBundle\Doc\Formatter\ContainerFormatterRegistry</parameter>
+
+        <parameter key="api.doc_generator.class">FivePercent\Component\Api\Doc\DocGenerator</parameter>
+
+        <parameter key="api.event_dispatcher.chain.class">FivePercent\Bundle\ApiBundle\EventDispatcher\ChainEventDispatcher</parameter>
+
+        <parameter key="api.routing_loader.class">FivePercent\Bundle\ApiBundle\Routing\ApiRoutingLoader</parameter>
+
+        <parameter key="api.controller.class">FivePercent\Bundle\ApiBundle\Controller\ApiController</parameter>
+
+        <parameter key="api.subscriber.response_transformable.class">FivePercent\Component\Api\EventListener\ResponseTransformableSubscriber</parameter>
+        <parameter key="api.subscriber.object_security_authorization.class">FivePercent\Component\Api\EventListener\ApiAuthorizationSubscriber</parameter>
+        <parameter key="api.subscriber.enabled_checker.class">FivePercent\Component\Api\EventListener\CheckArgumentsEnabledSubscriber</parameter>
+        <parameter key="api.subscriber.logger.class">FivePercent\Component\Api\EventListener\LoggerSubscriber</parameter>
+    </parameters>
+
+    <services>
+        <!-- Handler registry -->
+        <service id="api.handler_registry" class="%api.handler_registry.class%">
+            <argument type="service" id="service_container" />
+        </service>
+
+        <!-- Callable resolvers -->
+        <service id="api.callable_resolver" class="%api.callable_resolver.class%" public="false" />
+
+        <service id="api.callable_resolver.callable" class="%api.callable_resolver.callable.class%" public="false">
+            <tag name="api.callable_resolver" />
+        </service>
+
+        <service id="api.callable_resolver.service" class="%api.callable_resolver.service.class%" public="false">
+            <argument type="service" id="service_container" />
+            <tag name="api.callable_resolver" />
+        </service>
+
+        <!-- Action loaders -->
+        <service id="api.action_loader_cached_abstract" class="%api.action_loader.cached.class%" abstract="true" public="false">
+            <argument /> <!-- Real loader -->
+            <argument /> <!-- Cache system -->
+            <argument /> <!-- Cache key -->
+        </service>
+
+        <service id="api.action_loader_abstract" class="%api.action_loader.chain.class%" abstract="true" public="false" />
+
+        <service id="api.action_loader_callable_abstract" class="%api.action_loader.callable.class%" abstract="true" public="false" />
+
+        <service id="api.action_loader_service_annotated_abstract" class="%api.action_loader.service_annotated.class%" abstract="true" public="false">
+            <argument type="service" id="annotation_reader" />
+        </service>
+
+        <service id="api.action_loader.service_method" class="%api.action_loader.service_method.class%" abstract="true" public="false" />
+
+        <service id="api.action_manager_abstract" class="%api.action_manager.class%" abstract="true" public="false">
+            <argument /> <!-- Action Loader -->
+        </service>
+
+        <!-- Parameters resolver and extractors -->
+        <service id="api.parameter.object_mapper_resolver_and_extractor" class="%api.parameter.object_mapper_resolver_and_extractor.class%" public="false">
+            <argument type="service" id="object_mapper" />
+            <argument type="service" id="converter.parameter" on-invalid="true" />
+            <argument type="service" id="converter.property" on-invalid="true" />
+            <argument type="service" id="validator" on-invalid="true" />
+            <argument type="service" id="logger" on-invalid="true" />
+        </service>
+
+        <service id="api.parameter.method_parameter_resolver_and_extractor" class="%api.parameter.method_parameter_resolver_and_extractor.class%" public="false" />
+
+        <!-- Abstract handler for register handlers -->
+        <service id="api.handler_abstract" class="%api.handler.class%" abstract="true">
+            <argument /> <!-- Action Manager -->
+            <argument type="service" id="api.callable_resolver" />
+            <argument /> <!-- Parameter resolver -->
+            <argument /> <!-- Event Dispatcher -->
+            <argument /> <!-- Error system -->
+        </service>
+
+        <!-- Response extractors -->
+        <service id="api.response_extractor.object_extractor" class="%api.response_extractor.object_extractor.class%" public="false" />
+
+        <service id="api.response_extractor.annotated_normalized_object_extractor" class="%api.response_extractor.annotated_normalized_object_extractor.class%" public="false">
+            <argument type="service" id="model_normalizer.annotated.metadata_factory" />
+        </service>
+
+        <!-- Abstract action and handler extractor for generate docs -->
+        <service id="api.handler.action_extractor_abstract" class="%api.handler.action_extractor.class%" abstract="true" public="false">
+            <argument type="service" id="api.callable_resolver" />
+            <argument /> <!-- Parameter extractor -->
+            <argument /> <!-- Response extractor -->
+        </service>
+
+        <service id="api.handler.extractor_abstract" class="%api.handler.extractor.class%" abstract="true">
+            <argument /> <!-- Action extractor -->
+        </service>
+
+        <service id="api.handler.cached_extractor_abstract" class="%api.handler.cached_extractor.class%" abstract="true">
+            <argument /> <!-- Delegate extractor -->
+            <argument /> <!-- Cache service -->
+            <argument /> <!-- Handler cache key -->
+        </service>
+
+        <service id="api.handler.extractor_registry" class="%api.handler.extractor_registry.class%">
+            <argument type="service" id="service_container" />
+        </service>
+
+        <!-- Error system -->
+        <service id="api.error_abstract" class="%api.error.class%" abstract="true" public="false" />
+
+        <!-- API Servers -->
+        <service id="api.server.json_rpc_abstract" class="%api.server.json_rpc.class%" abstract="true">
+            <argument /> <!-- Handler -->
+            <argument /> <!-- Doc generator -->
+            <argument>%kernel.debug%</argument>
+        </service>
+
+        <service id="api.server_registry" class="%api.server_registry.class%">
+            <argument type="service" id="service_container" />
+        </service>
+
+        <!-- Formatter system -->
+        <service id="api.formatter_registry" class="%api.formatter_registry.class%">
+            <argument type="service" id="service_container" />
+        </service>
+
+        <service id="api.formatter.json_rpc" class="%api.formatter.json_rpc.class%">
+            <tag name="api.formatter" key="json-rpc" />
+        </service>
+
+        <!-- Doc Generator system -->
+        <service id="api.doc_generator" class="%api.doc_generator.class%" abstract="true">
+            <argument /> <!-- Extractor -->
+            <argument type="service" id="api.formatter_registry" />
+        </service>
+
+        <!-- Event dispatcher -->
+        <service id="api.event_dispatcher_chain_abstract" class="%api.event_dispatcher.chain.class%" abstract="true" public="false" />
+
+        <!-- Api routing loader -->
+        <service id="api.routing_loader" class="%api.routing_loader.class%">
+            <tag name="routing.loader" />
+        </service>
+
+        <!-- Api Controller for handle API methods -->
+        <service id="api.controller" class="%api.controller.class%">
+            <argument type="service" id="api.server_registry" />
+        </service>
+
+        <!-- Subscribers for API -->
+        <service id="api.subscriber.response_transformable_abstract" class="%api.subscriber.response_transformable.class%" abstract="true" public="false">
+            <argument type="service" id="model_transformer" />
+            <argument type="service" id="model_normalizer" />
+        </service>
+
+        <service id="api.subscriber.object_security_authorization_abstract" class="%api.subscriber.object_security_authorization.class%" abstract="true" public="false">
+            <argument type="service" id="object_security.authorization_checker" />
+        </service>
+
+        <service id="api.subscriber.enabled_checker_abstract" class="%api.subscriber.enabled_checker.class%" abstract="true" public="false">
+            <argument type="service" id="enabled_checker" />
+        </service>
+
+        <service id="api.subscriber.logger_abstract" class="%api.subscriber.logger.class%" abstract="true" public="false">
+            <argument type="service" id="logger" />
+        </service>
+    </services>
+</container>
